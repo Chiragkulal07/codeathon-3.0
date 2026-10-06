@@ -10,6 +10,8 @@ import {
   WifiOff,
   FolderOpen,
   ChevronDown,
+  Shield,
+  Sparkles,
 } from 'lucide-react';
 
 export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
@@ -36,57 +38,74 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
   return (
     <header
       style={{
-        height: '64px',
+        height: '66px',
         borderBottom: '1px solid var(--border-glass)',
-        background: 'rgba(10, 13, 20, 0.8)',
-        backdropFilter: 'blur(12px)',
+        background: 'rgba(7, 9, 14, 0.82)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 24px',
+        padding: '0 28px',
         position: 'sticky',
         top: 0,
         zIndex: 50,
       }}
     >
-      {/* Left side: Room Indicator or Brand Breadcrumb */}
+      {/* Left side: Active Room Indicator & Role Badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {currentRoom ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <FolderOpen size={18} style={{ color: 'var(--primary)' }} />
-            <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>{currentRoom.name}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 'var(--radius-sm)',
+                background: 'rgba(99, 102, 241, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--primary)',
+              }}
+            >
+              <FolderOpen size={18} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: '1rem' }}>{currentRoom.name}</span>
             {currentRoom.myRole && (
               <span className={`badge badge-${currentRoom.myRole}`}>{currentRoom.myRole}</span>
             )}
           </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.92rem' }}>
-              CloudVault Workspace
+            <Sparkles size={18} style={{ color: 'var(--primary)' }} />
+            <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.98rem' }}>
+              CloudVault Collab Workspace
             </span>
           </div>
         )}
       </div>
 
-      {/* Right side: Live Status, Notifications, Profile, Direct Logout */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {/* Live Socket Status */}
+      {/* Right side: Live Telemetry, Notifications & User Controls */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        {/* Live Socket Connection Badge */}
         <div
-          title={connected ? 'Realtime Connected' : 'Disconnected'}
+          title={connected ? 'Real-time Socket Connected' : 'Disconnected from Socket Server'}
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
+            gap: 8,
             fontSize: '0.78rem',
+            fontWeight: 600,
             color: connected ? 'var(--accent-emerald)' : 'var(--text-subtle)',
-            background: connected ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.05)',
-            padding: '4px 10px',
+            background: connected ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.04)',
+            padding: '5px 12px',
             borderRadius: '9999px',
-            border: `1px solid ${connected ? 'rgba(16, 185, 129, 0.25)' : 'transparent'}`,
+            border: `1px solid ${connected ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-glass)'}`,
+            boxShadow: connected ? '0 0 12px rgba(16, 185, 129, 0.2)' : 'none',
           }}
         >
-          {connected ? <Wifi size={14} /> : <WifiOff size={14} />}
-          <span>{connected ? 'Live' : 'Offline'}</span>
+          {connected ? <div className="live-dot" /> : <WifiOff size={14} />}
+          <span>{connected ? 'Live Sync' : 'Offline'}</span>
         </div>
 
         {/* Notifications Popover */}
@@ -94,7 +113,7 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
           <button
             onClick={() => setShowNotifications((prev) => !prev)}
             className="btn btn-secondary btn-icon"
-            style={{ position: 'relative' }}
+            style={{ position: 'relative', width: 38, height: 38, borderRadius: '50%' }}
             title="Notifications"
           >
             <Bell size={18} />
@@ -102,19 +121,19 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
               <span
                 style={{
                   position: 'absolute',
-                  top: -4,
-                  right: -4,
+                  top: -2,
+                  right: -2,
                   background: 'var(--accent-rose)',
                   color: '#fff',
                   fontSize: '0.65rem',
-                  fontWeight: 700,
+                  fontWeight: 800,
                   width: 18,
                   height: 18,
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 0 10px rgba(244, 63, 94, 0.6)',
+                  boxShadow: '0 0 10px rgba(244, 63, 94, 0.7)',
                 }}
               >
                 {unreadCount > 9 ? '9+' : unreadCount}
@@ -127,14 +146,14 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
               className="glass-panel"
               style={{
                 position: 'absolute',
-                top: 'calc(100% + 10px)',
+                top: 'calc(100% + 12px)',
                 right: 0,
                 width: '360px',
                 maxHeight: '440px',
                 display: 'flex',
                 flexDirection: 'column',
                 zIndex: 100,
-                boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
+                boxShadow: '0 20px 45px rgba(0,0,0,0.85)',
               }}
             >
               <div
@@ -146,7 +165,7 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
                   justifyContent: 'space-between',
                 }}
               >
-                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Notifications</div>
+                <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>Notifications</div>
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllAsRead}
@@ -162,7 +181,7 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
                 {notifications.length === 0 ? (
                   <div
                     style={{
-                      padding: '30px 20px',
+                      padding: '36px 20px',
                       textAlign: 'center',
                       color: 'var(--text-subtle)',
                       fontSize: '0.85rem',
@@ -176,7 +195,7 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
                       key={n.id}
                       onClick={() => !n.read && markAsRead(n.id)}
                       style={{
-                        padding: '10px 12px',
+                        padding: '10px 14px',
                         borderRadius: 'var(--radius-sm)',
                         background: n.read ? 'transparent' : 'rgba(99, 102, 241, 0.08)',
                         borderLeft: n.read ? '3px solid transparent' : '3px solid var(--primary)',
@@ -185,7 +204,7 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
                         transition: 'background 0.2s',
                       }}
                     >
-                      <div style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>
+                      <div style={{ fontSize: '0.84rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
                         {n.message}
                       </div>
                       <div
@@ -213,25 +232,32 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
           <button
             onClick={() => setShowProfile((prev) => !prev)}
             className="btn btn-secondary"
-            style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 8 }}
+            style={{
+              padding: '5px 12px 5px 6px',
+              borderRadius: '9999px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
           >
             <div
               style={{
-                width: 26,
-                height: 26,
+                width: 28,
+                height: 28,
                 borderRadius: '50%',
                 background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent-cyan) 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 700,
-                fontSize: '0.8rem',
+                fontSize: '0.82rem',
                 color: '#fff',
+                boxShadow: '0 0 10px var(--primary-glow)',
               }}
             >
               {user?.name?.[0]?.toUpperCase() || 'U'}
             </div>
-            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{user?.name}</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{user?.name}</span>
             <ChevronDown size={14} style={{ color: 'var(--text-subtle)' }} />
           </button>
 
@@ -240,17 +266,19 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
               className="glass-panel"
               style={{
                 position: 'absolute',
-                top: 'calc(100% + 10px)',
+                top: 'calc(100% + 12px)',
                 right: 0,
-                width: '220px',
+                width: '230px',
                 padding: '8px',
                 zIndex: 100,
-                boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
+                boxShadow: '0 20px 45px rgba(0,0,0,0.85)',
               }}
             >
-              <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-glass)' }}>
-                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{user?.name}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{user?.email}</div>
+              <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--border-glass)' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>{user?.name}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user?.email}
+                </div>
               </div>
               <button
                 onClick={logout}
@@ -263,7 +291,7 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
                   fontSize: '0.85rem',
                 }}
               >
-                <LogOut size={16} /> Logout
+                <LogOut size={16} /> Sign Out
               </button>
             </div>
           )}
@@ -274,7 +302,7 @@ export default function Navbar({ currentRoom, rooms = [], onSelectRoom }) {
           onClick={logout}
           className="btn btn-danger btn-sm"
           title="Sign out of your account"
-          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}
         >
           <LogOut size={15} />
           <span>Logout</span>

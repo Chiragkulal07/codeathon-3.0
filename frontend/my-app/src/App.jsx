@@ -16,8 +16,7 @@ import PublicLinkView from './views/PublicLinkView';
 
 import CreateRoomModal from './components/modals/CreateRoomModal';
 import RoomMembersModal from './components/modals/RoomMembersModal';
-import CreateShareLinkModal from './components/modals/CreateShareLinkModal';
-import FileAccessModal from './components/modals/FileAccessModal';
+import UnifiedShareModal from './components/modals/UnifiedShareModal';
 import FileActivityModal from './components/modals/FileActivityModal';
 import CollabEditorModal from './components/modals/CollabEditorModal';
 
@@ -40,8 +39,7 @@ export default function App() {
   // Modals state
   const [createRoomModalOpen, setCreateRoomModalOpen] = useState(false);
   const [membersModalOpen, setMembersModalOpen] = useState(false);
-  const [shareLinkFile, setShareLinkFile] = useState(null);
-  const [accessFile, setAccessFile] = useState(null);
+  const [unifiedShareFile, setUnifiedShareFile] = useState(null);
   const [activityFile, setActivityFile] = useState(null);
   const [editorFile, setEditorFile] = useState(null);
 
@@ -196,8 +194,7 @@ export default function App() {
           <RoomView
             room={currentRoom}
             onOpenMembers={() => setMembersModalOpen(true)}
-            onOpenCreateShareLink={(f) => setShareLinkFile(f)}
-            onOpenFileAccess={(f) => setAccessFile(f)}
+            onOpenUnifiedShare={(f) => setUnifiedShareFile(f)}
             onOpenFileActivity={(f) => setActivityFile(f)}
             onOpenEditor={(f) => setEditorFile(f)}
             onRoomDeleted={handleRoomDeleted}
@@ -239,19 +236,10 @@ export default function App() {
         }}
       />
 
-      <CreateShareLinkModal
-        isOpen={!!shareLinkFile}
-        onClose={() => setShareLinkFile(null)}
-        file={shareLinkFile}
-      />
-
-      <FileAccessModal
-        isOpen={!!accessFile}
-        onClose={() => setAccessFile(null)}
-        file={accessFile}
-        onAccessUpdated={() => {
-          // reload room files
-        }}
+      <UnifiedShareModal
+        isOpen={!!unifiedShareFile}
+        onClose={() => setUnifiedShareFile(null)}
+        file={unifiedShareFile}
       />
 
       <FileActivityModal

@@ -6,11 +6,10 @@ import {
   Link2,
   Mail,
   Plus,
-  Shield,
   Layers,
   LogOut,
-  User,
-  UserPlus,
+  FolderPlus,
+  Sparkles,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -34,12 +33,13 @@ export default function Sidebar({
         flexDirection: 'column',
         height: '100vh',
         flexShrink: 0,
+        zIndex: 60,
       }}
     >
       {/* Brand Header */}
       <div
         style={{
-          height: '64px',
+          height: '66px',
           padding: '0 20px',
           display: 'flex',
           alignItems: 'center',
@@ -49,24 +49,24 @@ export default function Sidebar({
       >
         <div
           style={{
-            width: 34,
-            height: 34,
+            width: 36,
+            height: 36,
             borderRadius: 'var(--radius-sm)',
             background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent-cyan) 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 15px var(--primary-glow)',
+            boxShadow: '0 0 16px var(--primary-glow)',
           }}
         >
           <FolderLock size={20} color="#fff" />
         </div>
         <div>
-          <div style={{ fontWeight: 800, fontSize: '1.05rem', letterSpacing: '-0.02em' }}>
+          <div style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', background: 'linear-gradient(135deg, #fff 0%, #cbd5e1 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             CloudVault
           </div>
-          <div style={{ fontSize: '0.68rem', color: 'var(--text-subtle)', fontWeight: 600 }}>
-            SECURE MERN COLLAB
+          <div style={{ fontSize: '0.66rem', color: 'var(--accent-cyan)', fontWeight: 700, letterSpacing: '0.06em' }}>
+            ENTERPRISE COLLAB
           </div>
         </div>
       </div>
@@ -76,7 +76,12 @@ export default function Sidebar({
         <button
           onClick={() => setActiveView('dashboard')}
           className={`btn ${activeView === 'dashboard' ? 'btn-primary' : 'btn-ghost'}`}
-          style={{ width: '100%', justifyContent: 'flex-start', padding: '10px 14px' }}
+          style={{
+            width: '100%',
+            justifyContent: 'flex-start',
+            padding: '10px 14px',
+            borderLeft: activeView === 'dashboard' ? '3px solid #fff' : '3px solid transparent',
+          }}
         >
           <LayoutDashboard size={18} />
           <span>Dashboard</span>
@@ -85,7 +90,12 @@ export default function Sidebar({
         <button
           onClick={() => setActiveView('rooms')}
           className={`btn ${activeView === 'rooms' ? 'btn-primary' : 'btn-ghost'}`}
-          style={{ width: '100%', justifyContent: 'flex-start', padding: '10px 14px' }}
+          style={{
+            width: '100%',
+            justifyContent: 'flex-start',
+            padding: '10px 14px',
+            borderLeft: activeView === 'rooms' ? '3px solid #fff' : '3px solid transparent',
+          }}
         >
           <Layers size={18} />
           <span>Rooms & Files</span>
@@ -94,7 +104,12 @@ export default function Sidebar({
         <button
           onClick={() => setActiveView('links')}
           className={`btn ${activeView === 'links' ? 'btn-primary' : 'btn-ghost'}`}
-          style={{ width: '100%', justifyContent: 'flex-start', padding: '10px 14px' }}
+          style={{
+            width: '100%',
+            justifyContent: 'flex-start',
+            padding: '10px 14px',
+            borderLeft: activeView === 'links' ? '3px solid #fff' : '3px solid transparent',
+          }}
         >
           <Link2 size={18} />
           <span>Share Links</span>
@@ -107,14 +122,15 @@ export default function Sidebar({
             width: '100%',
             justifyContent: 'space-between',
             padding: '10px 14px',
+            borderLeft: activeView === 'invites' ? '3px solid #fff' : '3px solid transparent',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Mail size={18} />
             <div style={{ textAlign: 'left' }}>
               <div>Invitations</div>
               <div style={{ fontSize: '0.65rem', color: activeView === 'invites' ? 'rgba(255,255,255,0.7)' : 'var(--text-subtle)', fontWeight: 400 }}>
-                Accept to join rooms
+                Accept & Join Rooms
               </div>
             </div>
           </div>
@@ -124,10 +140,10 @@ export default function Sidebar({
                 background: 'var(--accent-rose)',
                 color: '#fff',
                 fontSize: '0.7rem',
-                fontWeight: 700,
-                padding: '2px 7px',
+                fontWeight: 800,
+                padding: '2px 8px',
                 borderRadius: '9999px',
-                boxShadow: '0 0 8px rgba(244, 63, 94, 0.5)',
+                boxShadow: '0 0 10px rgba(244, 63, 94, 0.6)',
                 animation: 'pulse 2s infinite',
               }}
             >
@@ -166,7 +182,7 @@ export default function Sidebar({
               letterSpacing: '0.06em',
             }}
           >
-            My Rooms ({rooms.length})
+            My Workspaces ({rooms.length})
           </span>
           <button
             onClick={onOpenCreateRoom}
@@ -178,7 +194,7 @@ export default function Sidebar({
           </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {rooms.map((room) => {
             const isSelected = activeView === 'rooms' && currentRoomId === room.id;
             return (
@@ -192,11 +208,11 @@ export default function Sidebar({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '8px 12px',
+                  padding: '9px 12px',
                   borderRadius: 'var(--radius-sm)',
-                  background: isSelected ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+                  background: isSelected ? 'rgba(99, 102, 241, 0.18)' : 'transparent',
                   border: isSelected
-                    ? '1px solid rgba(99, 102, 241, 0.3)'
+                    ? '1px solid rgba(99, 102, 241, 0.35)'
                     : '1px solid transparent',
                   color: isSelected ? '#fff' : 'var(--text-muted)',
                   fontSize: '0.85rem',
@@ -238,7 +254,7 @@ export default function Sidebar({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'rgba(0, 0, 0, 0.25)',
+          background: 'rgba(0, 0, 0, 0.3)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
@@ -252,7 +268,7 @@ export default function Sidebar({
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 700,
-              fontSize: '0.8rem',
+              fontSize: '0.82rem',
               color: '#fff',
               flexShrink: 0,
             }}
@@ -262,8 +278,8 @@ export default function Sidebar({
           <div style={{ minWidth: 0, flex: 1 }}>
             <div
               style={{
-                fontSize: '0.82rem',
-                fontWeight: 600,
+                fontSize: '0.84rem',
+                fontWeight: 700,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',

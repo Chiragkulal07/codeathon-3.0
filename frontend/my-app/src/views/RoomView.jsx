@@ -60,8 +60,7 @@ function getFileIcon(file) {
 export default function RoomView({
   room,
   onOpenMembers,
-  onOpenCreateShareLink,
-  onOpenFileAccess,
+  onOpenUnifiedShare,
   onOpenFileActivity,
   onOpenEditor,
   onRoomDeleted,
@@ -683,27 +682,23 @@ export default function RoomView({
                         <Download size={15} />
                       </button>
 
-                      {/* Create Share Link (Admin only) */}
+                      {/* Single Unified Share & Access Control Button (Admin only) */}
                       {isAdmin && (
                         <button
-                          onClick={() => onOpenCreateShareLink(file)}
-                          className="btn btn-secondary btn-icon"
-                          title="Create Share Link"
-                          style={{ color: 'var(--accent-amber)' }}
+                          onClick={() => onOpenUnifiedShare(file)}
+                          className="btn btn-secondary"
+                          style={{
+                            gap: 6,
+                            fontSize: '0.78rem',
+                            padding: '6px 12px',
+                            color: 'var(--accent-cyan)',
+                            border: '1px solid rgba(6, 182, 212, 0.35)',
+                            background: 'rgba(6, 182, 212, 0.08)',
+                          }}
+                          title="Share Link & Access Control"
                         >
                           <Share2 size={15} />
-                        </button>
-                      )}
-
-                      {/* Per-File Access Grants (Admin only) */}
-                      {isAdmin && (
-                        <button
-                          onClick={() => onOpenFileAccess(file)}
-                          className="btn btn-secondary btn-icon"
-                          title="Manage Access Grants"
-                          style={{ color: 'var(--accent-purple)' }}
-                        >
-                          <ShieldCheck size={15} />
+                          <span>Share & Access</span>
                         </button>
                       )}
 

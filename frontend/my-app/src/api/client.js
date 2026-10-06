@@ -119,6 +119,7 @@ export const api = {
   // Rooms
   listRooms: () => apiRequest('/rooms'),
   createRoom: (name) => apiRequest('/rooms', { method: 'POST', body: JSON.stringify({ name }) }),
+  joinRoom: (roomId) => apiRequest('/rooms/join', { method: 'POST', body: JSON.stringify({ roomId }) }),
   getRoom: (roomId) => apiRequest(`/rooms/${roomId}`),
   updateRoom: (roomId, name) => apiRequest(`/rooms/${roomId}`, { method: 'PATCH', body: JSON.stringify({ name }) }),
   deleteRoom: (roomId) => apiRequest(`/rooms/${roomId}`, { method: 'DELETE' }),

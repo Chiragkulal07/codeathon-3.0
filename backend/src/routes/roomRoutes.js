@@ -3,12 +3,13 @@ import auth from '../middleware/auth.js';
 import roomRole from '../middleware/roomRole.js';
 import {
   createRoom, listRooms, getRoom, updateRoom, deleteRoom,
-  inviteMember, listRoomInvites, changeRole, removeMember,
+  inviteMember, listRoomInvites, changeRole, removeMember, joinRoomById,
 } from '../controllers/roomController.js';
 
 const router = Router();
 router.use(auth);
 
+router.post('/join', joinRoomById);
 router.post('/', createRoom);
 router.get('/', listRooms);
 router.get('/:roomId', roomRole('viewer'), getRoom);
