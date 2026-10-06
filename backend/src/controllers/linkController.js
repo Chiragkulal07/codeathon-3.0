@@ -23,6 +23,7 @@ const linkDto = (l) => ({
     maxDownloads: l.maxDownloads,
     downloadCount: l.downloadCount,
     allowedEmails: l.allowedEmails,
+    allowEdit: l.allowEdit,
     createdAt: l.createdAt,
 });
 
@@ -50,7 +51,7 @@ export async function createLink(req, res, next) {
         const file = await loadFileAsAdmin(req, res);
         if (!file) return;
 
-        const { expiresInMinutes, password, maxDownloads, allowedEmails } = req.body;
+        const { expiresInMinutes, password, maxDownloads, allowedEmails, allowEdit } = req.body;
 
         const mins = Number(expiresInMinutes);
         if (!mins || mins <= 0 || mins > 43200)
@@ -79,6 +80,7 @@ export async function createLink(req, res, next) {
             passwordHash: password ? await bcrypt.hash(String(password), 10) : undefined,
             maxDownloads: maxDownloads ?? null,
             allowedEmails: emails,
+            allowEdit: !!allowEdit,
         });
         res.status(201).json({ link: linkDto(link) });
     } catch (err) {
@@ -139,14 +141,100 @@ export async function resolveLink(req, res, next) {
         const file = await File.findById(link.fileId);
         if (!file) return res.status(404).json({ message: 'File no longer exists' });
 
+        // Check if caller is allowed (allowedEmails restriction)
+        let callerAllowed = true;
+        if (link.allowedEmails.length > 0) {
+            if (!req.user) callerAllowed = false;
+            else callerAllowed = link.allowedEmails.includes(req.user.email);
+        }
+
         res.json({
-            file: { name: file.originalName, size: file.size },
+            file: {
+                name: file.originalName,
+                size: file.size,
+                mimeType: file.mimeType,
+            },
             status: 'active',
             expiresAt: link.expiresAt,
             requiresPassword: link.hasPassword,
             requiresLogin: link.allowedEmails.length > 0,
             downloadsLeft: link.maxDownloads == null ? null : link.maxDownloads - link.downloadCount,
+            allowEdit: link.allowEdit,
+            callerAllowed,
         });
+    } catch (err) {
+        next(err);
+    }
+}
+
+// Returns raw text content of the file for inline preview/editing via link
+export async function readViaLink(req, res, next) {
+    try {
+        const link = await loadLink(req, res);
+        if (!link) return;
+
+        if (link.allowedEmails.length > 0) {
+            if (!req.user) return res.status(401).json({ message: 'Login required for this link' });
+            if (!link.allowedEmails.includes(req.user.email))
+                return res.status(403).json({ message: 'This link was not shared with you' });
+        }
+
+        if (link.passwordHash) {
+            const pw = req.body?.password || req.headers['x-link-password'];
+            if (!pw) return res.status(401).json({ message: 'Password required' });
+            if (!(await bcrypt.compare(String(pw), link.passwordHash)))
+                return res.status(401).json({ message: 'Wrong password' });
+        }
+
+        const file = await File.findById(link.fileId);
+        if (!file) return res.status(404).json({ message: 'File no longer exists' });
+        const fullPath = path.join(UPLOAD_DIR, file.storageName);
+        if (!fs.existsSync(fullPath))
+            return res.status(404).json({ message: 'File is missing from storage' });
+
+        const content = await fs.promises.readFile(fullPath, 'utf8');
+        res.json({
+            content,
+            allowEdit: link.allowEdit,
+            file: { name: file.originalName, mimeType: file.mimeType, id: file._id },
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function saveViaLink(req, res, next) {
+    try {
+        const link = await loadLink(req, res);
+        if (!link) return;
+
+        if (!link.allowEdit) {
+            return res.status(403).json({ message: 'Editing is not allowed on this share link' });
+        }
+
+        if (link.allowedEmails.length > 0) {
+            if (!req.user) return res.status(401).json({ message: 'Login required for this link' });
+            if (!link.allowedEmails.includes(req.user.email))
+                return res.status(403).json({ message: 'This link was not shared with you' });
+        }
+
+        if (link.passwordHash) {
+            const pw = req.body?.password || req.headers['x-link-password'];
+            if (!pw) return res.status(401).json({ message: 'Password required' });
+            if (!(await bcrypt.compare(String(pw), link.passwordHash)))
+                return res.status(401).json({ message: 'Wrong password' });
+        }
+
+        const file = await File.findById(link.fileId);
+        if (!file) return res.status(404).json({ message: 'File no longer exists' });
+        const fullPath = path.join(UPLOAD_DIR, file.storageName);
+
+        const newContent = req.body.content ?? '';
+        await fs.promises.writeFile(fullPath, newContent, 'utf8');
+        file.size = Buffer.byteLength(newContent, 'utf8');
+        await file.save();
+
+        res.json({ message: 'File saved successfully', size: file.size });
     } catch (err) {
         next(err);
     }

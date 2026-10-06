@@ -2,7 +2,7 @@ import { Router } from 'express';
 import auth from '../middleware/auth.js';
 import optionalAuth from '../middleware/optionalAuth.js';
 import {
-  createLink, listFileLinks, revokeLink, resolveLink, downloadViaLink,
+  createLink, listFileLinks, revokeLink, resolveLink, downloadViaLink, readViaLink, saveViaLink,
 } from '../controllers/linkController.js';
 import { listMyLinks } from '../controllers/historyController.js';
 
@@ -14,6 +14,9 @@ router.get('/files/:fileId/links', auth, listFileLinks);
 router.patch('/links/:linkId/revoke', auth, revokeLink);
 
 router.get('/s/:code', optionalAuth, resolveLink);
+router.get('/s/:code/read', optionalAuth, readViaLink);
+router.post('/s/:code/read', optionalAuth, readViaLink);
+router.post('/s/:code/save', optionalAuth, saveViaLink);
 router.get('/s/:code/download', optionalAuth, downloadViaLink);
 router.post('/s/:code/download', optionalAuth, downloadViaLink);
 

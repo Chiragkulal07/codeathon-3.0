@@ -30,11 +30,12 @@ export default function App() {
   const isPublicShareLink = path.startsWith('/s/');
   const publicShareCode = isPublicShareLink ? path.split('/s/')[1]?.split('/')[0] : null;
 
-  const [activeView, setActiveView] = useState('dashboard'); // 'dashboard' | 'rooms' | 'links' | 'invites'
+  const [activeView, setActiveView] = useState('dashboard'); // 'dashboard' | 'rooms' | 'links' | 'invites' | 'sharelink'
   const [rooms, setRooms] = useState([]);
   const [currentRoomId, setCurrentRoomId] = useState(null);
   const [currentRoom, setCurrentRoom] = useState(null);
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
+  const [shareLinkCode, setShareLinkCode] = useState(publicShareCode); // track which /s/:code to show
 
   // Modals state
   const [createRoomModalOpen, setCreateRoomModalOpen] = useState(false);
@@ -48,6 +49,12 @@ export default function App() {
     if (isAuthenticated) {
       loadRooms();
       loadPendingInvitesCount();
+      // If landing on a share link while authenticated, show it inside the dashboard
+      if (publicShareCode) {
+        setShareLinkCode(publicShareCode);
+        setActiveView('sharelink');
+        window.history.replaceState(null, '', '/');
+      }
     }
   }, [isAuthenticated]);
 
@@ -124,8 +131,8 @@ export default function App() {
     setActiveView('rooms');
   };
 
-  // If visiting public share link
-  if (isPublicShareLink && publicShareCode) {
+  // If visiting public share link and NOT authenticated, show standalone page
+  if (isPublicShareLink && publicShareCode && !isAuthenticated && !authLoading) {
     return (
       <>
         <PublicLinkView code={publicShareCode} onGoHome={() => (window.location.pathname = '/')} />
@@ -202,6 +209,14 @@ export default function App() {
 
         {activeView === 'invites' && (
           <InvitesView onInviteAccepted={handleInviteAccepted} />
+        )}
+
+        {activeView === 'sharelink' && shareLinkCode && (
+          <PublicLinkView
+            code={shareLinkCode}
+            embedded
+            onGoHome={() => setActiveView('dashboard')}
+          />
         )}
       </div>
 

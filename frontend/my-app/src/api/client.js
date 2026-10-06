@@ -169,8 +169,20 @@ export const api = {
     return apiRequest(`/links?${search.toString()}`);
   },
 
-  // Public Link Resolver & Download
+  // Public Link Resolver, Read & Download
   resolvePublicLink: (code) => apiRequest(`/s/${code}`),
+  readPublicLinkContent: (code, password) => {
+    if (password) {
+      return apiRequest(`/s/${code}/read`, { method: 'POST', body: JSON.stringify({ password }) });
+    }
+    return apiRequest(`/s/${code}/read`);
+  },
+  savePublicLinkContent: (code, content, password) => {
+    return apiRequest(`/s/${code}/save`, {
+      method: 'POST',
+      body: JSON.stringify({ content, password }),
+    });
+  },
   downloadPublicLinkUrl: (code) => `/api/s/${code}/download`,
 
   // Notifications & Tracking

@@ -12,6 +12,7 @@ const shareLinkSchema = new mongoose.Schema(
     maxDownloads: { type: Number, default: null },
     downloadCount: { type: Number, default: 0 },
     allowedEmails: { type: [String], default: [] },
+    allowEdit: { type: Boolean, default: false },
     status: { type: String, enum: ['active', 'revoked'], default: 'active' },
   },
   { timestamps: true }

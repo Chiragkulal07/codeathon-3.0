@@ -10,6 +10,7 @@ import {
   Check,
   Calendar,
   Users,
+  Pencil,
 } from 'lucide-react';
 
 export default function CreateShareLinkModal({ isOpen, onClose, file }) {
@@ -21,6 +22,7 @@ export default function CreateShareLinkModal({ isOpen, onClose, file }) {
   const [maxDownloads, setMaxDownloads] = useState(5);
   const [useAllowedEmails, setUseAllowedEmails] = useState(false);
   const [allowedEmailsStr, setAllowedEmailsStr] = useState('');
+  const [allowEdit, setAllowEdit] = useState(false);
 
   const [createdLink, setCreatedLink] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -55,6 +57,7 @@ export default function CreateShareLinkModal({ isOpen, onClose, file }) {
             .map((s) => s.trim())
             .filter(Boolean)
         : undefined,
+      allowEdit,
     };
 
     try {
@@ -97,21 +100,14 @@ export default function CreateShareLinkModal({ isOpen, onClose, file }) {
 
         {createdLink ? (
           <div className="modal-body">
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '24px 16px',
-                background: 'rgba(16, 185, 129, 0.08)',
-                border: '1px solid rgba(16, 185, 129, 0.2)',
-                borderRadius: 'var(--radius-md)',
-                marginBottom: 20,
-              }}
-            >
+            <div style={{ textAlign: 'center', padding: '24px 16px', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: 'var(--radius-md)', marginBottom: 20 }}>
               <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--accent-emerald)', marginBottom: 6 }}>
                 Share Link Generated!
               </div>
               <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                Anyone with this link (and meeting access requirements) can download this file.
+                {createdLink.allowEdit
+                  ? 'Recipients can view AND edit this file inline.'
+                  : 'Anyone with this link (and meeting access requirements) can download this file.'}
               </div>
             </div>
 
@@ -138,6 +134,9 @@ export default function CreateShareLinkModal({ isOpen, onClose, file }) {
               {createdLink.maxDownloads && <div>• Max Downloads: {createdLink.maxDownloads}</div>}
               {createdLink.allowedEmails?.length > 0 && (
                 <div>• Restricted to: {createdLink.allowedEmails.join(', ')}</div>
+              )}
+              {createdLink.allowEdit && (
+                <div style={{ color: 'var(--accent-cyan)' }}>• ✏️ Editing Enabled: Recipients can edit this file</div>
               )}
             </div>
           </div>
@@ -285,6 +284,31 @@ export default function CreateShareLinkModal({ isOpen, onClose, file }) {
                     </div>
                   </div>
                 )}
+              </div>
+              {/* Allow Editing toggle - only makes sense for text/code files */}
+              <div
+                style={{
+                  background: allowEdit ? 'rgba(6, 182, 212, 0.08)' : 'var(--bg-tertiary)',
+                  padding: '12px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  border: allowEdit ? '1px solid rgba(6, 182, 212, 0.35)' : '1px solid var(--border-glass)',
+                  marginTop: 12,
+                  transition: 'all 0.2s',
+                }}
+              >
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: '0.88rem', fontWeight: 600 }}>
+                  <input
+                    type="checkbox"
+                    checked={allowEdit}
+                    onChange={(e) => setAllowEdit(e.target.checked)}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Pencil size={15} style={{ color: 'var(--accent-cyan)' }} /> Allow Inline Editing
+                  </div>
+                </label>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', marginTop: 6, paddingLeft: 28 }}>
+                  Recipients can view and live-edit the file content directly in the browser (text/code files only).
+                </div>
               </div>
             </div>
 
