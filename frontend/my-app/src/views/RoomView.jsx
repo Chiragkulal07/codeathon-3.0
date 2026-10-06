@@ -23,6 +23,8 @@ import {
   Loader2,
   LogOut,
   UserPlus,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 function formatBytes(bytes) {
@@ -75,7 +77,14 @@ export default function RoomView({
   const [dragActive, setDragActive] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState('');
-  const [convertingFileId, setConvertingFileId] = useState(null);
+  const [copiedRoomId, setCopiedRoomId] = useState(false);
+
+  const copyRoomId = () => {
+    navigator.clipboard.writeText(room.id);
+    setCopiedRoomId(true);
+    setTimeout(() => setCopiedRoomId(false), 3000);
+    addToast({ title: 'Room ID Copied', message: `Copied ID: ${room.id}`, type: 'info' });
+  };
 
   const fileInputRef = useRef(null);
 
@@ -364,9 +373,26 @@ export default function RoomView({
                 )}
               </div>
             )}
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-subtle)', marginTop: 2 }}>
-              {room.members?.length || 1} team members • Created{' '}
-              {new Date(room.createdAt).toLocaleDateString()}
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-subtle)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <span>{room.members?.length || 1} team members • Created {new Date(room.createdAt).toLocaleDateString()}</span>
+              <button
+                onClick={copyRoomId}
+                className="btn btn-ghost btn-sm"
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '2px 8px',
+                  background: 'rgba(99, 102, 241, 0.12)',
+                  border: '1px solid rgba(99, 102, 241, 0.3)',
+                  color: 'var(--primary)',
+                  fontWeight: 600,
+                  gap: 5,
+                  fontFamily: 'monospace',
+                }}
+                title="Click to copy Room ID"
+              >
+                {copiedRoomId ? <Check size={12} /> : <Copy size={12} />}
+                <span>{copiedRoomId ? 'Copied ID!' : `Room ID: ${room.id}`}</span>
+              </button>
             </div>
           </div>
         </div>

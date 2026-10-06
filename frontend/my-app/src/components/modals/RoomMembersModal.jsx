@@ -10,6 +10,8 @@ import {
   Trash2,
   Mail,
   Clock,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 export default function RoomMembersModal({ isOpen, onClose, room, onRoomUpdated }) {
@@ -39,6 +41,15 @@ export default function RoomMembersModal({ isOpen, onClose, room, onRoomUpdated 
     } catch {
       // ignore
     }
+  };
+
+  const [copiedId, setCopiedId] = useState(false);
+
+  const copyRoomId = () => {
+    navigator.clipboard.writeText(room.id);
+    setCopiedId(true);
+    setTimeout(() => setCopiedId(false), 3000);
+    addToast({ title: 'Room ID Copied', message: `Copied ID: ${room.id}`, type: 'info' });
   };
 
   if (!isOpen || !room) return null;
@@ -98,7 +109,27 @@ export default function RoomMembersModal({ isOpen, onClose, room, onRoomUpdated 
             <Users size={20} style={{ color: 'var(--primary)' }} />
             <div>
               <h3 style={{ fontSize: '1.1rem' }}>Room Members & Invites</h3>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{room.name}</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                <span>{room.name}</span>
+                <span>•</span>
+                <button
+                  onClick={copyRoomId}
+                  className="btn btn-ghost btn-sm"
+                  style={{
+                    fontSize: '0.72rem',
+                    padding: '1px 6px',
+                    background: 'rgba(99, 102, 241, 0.12)',
+                    border: '1px solid rgba(99, 102, 241, 0.3)',
+                    color: 'var(--primary)',
+                    fontFamily: 'monospace',
+                    gap: 4,
+                  }}
+                  title="Click to copy Room ID"
+                >
+                  {copiedId ? <Check size={11} /> : <Copy size={11} />}
+                  <span>{copiedId ? 'Copied ID!' : `ID: ${room.id}`}</span>
+                </button>
+              </div>
             </div>
           </div>
           <button onClick={onClose} className="btn btn-ghost btn-icon">
