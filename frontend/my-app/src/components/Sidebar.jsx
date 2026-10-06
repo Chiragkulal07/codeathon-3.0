@@ -10,6 +10,7 @@ import {
   Layers,
   LogOut,
   User,
+  UserPlus,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -110,17 +111,24 @@ export default function Sidebar({
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Mail size={18} />
-            <span>Invitations</span>
+            <div style={{ textAlign: 'left' }}>
+              <div>Invitations</div>
+              <div style={{ fontSize: '0.65rem', color: activeView === 'invites' ? 'rgba(255,255,255,0.7)' : 'var(--text-subtle)', fontWeight: 400 }}>
+                Accept to join rooms
+              </div>
+            </div>
           </div>
           {pendingInvitesCount > 0 && (
             <span
               style={{
-                background: 'var(--primary)',
+                background: 'var(--accent-rose)',
                 color: '#fff',
                 fontSize: '0.7rem',
                 fontWeight: 700,
-                padding: '1px 7px',
+                padding: '2px 7px',
                 borderRadius: '9999px',
+                boxShadow: '0 0 8px rgba(244, 63, 94, 0.5)',
+                animation: 'pulse 2s infinite',
               }}
             >
               {pendingInvitesCount}

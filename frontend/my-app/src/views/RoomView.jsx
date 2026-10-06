@@ -21,6 +21,8 @@ import {
   Sparkles,
   FileOutput,
   Loader2,
+  LogOut,
+  UserPlus,
 } from 'lucide-react';
 
 function formatBytes(bytes) {
@@ -246,12 +248,49 @@ export default function RoomView({
     }
   };
 
+  const handleLeaveRoom = async () => {
+    if (
+      !window.confirm(
+        `Are you sure you want to leave "${room.name}"? You will need a new invite to rejoin.`
+      )
+    )
+      return;
+    try {
+      await api.removeMember(room.id, user._id || user.id);
+      addToast({ title: 'Left Room', message: `You left "${room.name}"`, type: 'info' });
+      onRoomDeleted(room.id); // reuses same handler to remove room from list
+    } catch (err) {
+      addToast({ title: 'Error', message: err.message, type: 'error' });
+    }
+  };
+
   if (!room) {
     return (
       <div className="page-body" style={{ textAlign: 'center', padding: '100px 0' }}>
         <FolderOpen size={48} style={{ color: 'var(--text-subtle)', marginBottom: 16 }} />
-        <div style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: 10 }}>
           Select or create a room from the sidebar to view files.
+        </div>
+        <div style={{ fontSize: '0.85rem', color: 'var(--text-subtle)', marginBottom: 20 }}>
+          Want to join a room? Ask the room owner to invite you via your email,
+          then accept the invite from the <strong style={{ color: 'var(--primary)' }}>Invitations</strong> section in the sidebar.
+        </div>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '10px 20px',
+            borderRadius: 'var(--radius-md)',
+            background: 'rgba(99, 102, 241, 0.12)',
+            border: '1px solid rgba(99, 102, 241, 0.3)',
+            color: 'var(--primary)',
+            fontSize: '0.88rem',
+            fontWeight: 600,
+          }}
+        >
+          <UserPlus size={18} />
+          To join a room → Go to <strong style={{ marginLeft: 4 }}>Invitations</strong> in the sidebar
         </div>
       </div>
     );
@@ -334,12 +373,26 @@ export default function RoomView({
         </div>
 
         {/* Room Action Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <button onClick={onOpenMembers} className="btn btn-secondary">
             <Users size={16} />
             <span>Members ({room.members?.length || 0})</span>
           </button>
 
+          {/* Non-owners: Leave Room */}
+          {!isOwner && (
+            <button
+              onClick={handleLeaveRoom}
+              className="btn btn-ghost"
+              style={{ color: 'var(--accent-amber)', border: '1px solid rgba(245, 158, 11, 0.3)' }}
+              title="Leave this room"
+            >
+              <LogOut size={16} />
+              <span>Leave Room</span>
+            </button>
+          )}
+
+          {/* Owners: Delete Room */}
           {isOwner && (
             <button onClick={handleDeleteRoom} className="btn btn-danger">
               <Trash2 size={16} />
