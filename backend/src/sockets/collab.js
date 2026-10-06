@@ -1,14 +1,17 @@
 import fs from 'fs';
 import path from 'path';
 import mongoose from 'mongoose';
+import mammoth from 'mammoth';
 import File from '../models/File.js';
 import Room from '../models/Room.js';
 import { getMembership, hasRole, canAccessFile } from '../services/permissions.js';
 import { UPLOAD_DIR } from '../config/paths.js';
 
-const MAX_BYTES = 1024 * 1024; // 1 MB edit limit
+const MAX_BYTES = 5 * 1024 * 1024; // 5 MB edit limit
 const TEXT_EXT = new Set([
-  '.txt', '.md', '.json', '.csv', '.js', '.html', '.css', '.xml', '.yml', '.yaml', '.log',
+  '.txt', '.md', '.json', '.csv', '.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.scss',
+  '.xml', '.yml', '.yaml', '.log', '.py', '.java', '.c', '.cpp', '.cs', '.php', '.rb',
+  '.go', '.rs', '.sql', '.sh', '.env', '.config', '.docx',
 ]);
 
 const isTextFile = (file) =>
@@ -20,7 +23,7 @@ const isTextFile = (file) =>
 function canEditFile(membership, file, user) {
   if (!canAccessFile(membership, file, user)) return false;
   if (hasRole(membership, 'admin')) return true;
-  const grant = file.accessGrants.find((g) => g.email === user.email);
+  const grant = file.accessGrants?.find((g) => g.email === user.email);
   if (grant) return grant.role === 'editor';
   return hasRole(membership, 'editor');
 }
@@ -93,11 +96,21 @@ export function registerCollab(io, socket) {
       const { file, membership, error } = await loadForUser(fileId, user);
       if (error) return ack({ ok: false, error });
       if (!isTextFile(file))
-        return ack({ ok: false, error: 'Only text files can be opened for editing' });
+        return ack({ ok: false, error: 'Only text & docx files can be opened for editing' });
       if (file.size > MAX_BYTES)
-        return ack({ ok: false, error: 'File is too large to edit (1 MB max)' });
+        return ack({ ok: false, error: 'File is too large to edit (5 MB max)' });
 
-      const content = await fs.promises.readFile(path.join(UPLOAD_DIR, file.storageName), 'utf8');
+      const filePath = path.join(UPLOAD_DIR, file.storageName);
+      const ext = path.extname(file.originalName).toLowerCase();
+      let content = '';
+
+      if (ext === '.docx') {
+        const result = await mammoth.extractRawText({ path: filePath });
+        content = result.value || '';
+      } else {
+        content = await fs.promises.readFile(filePath, 'utf8');
+      }
+
       const canEdit = canEditFile(membership, file, user);
       const key = String(file._id);
 
@@ -119,14 +132,13 @@ export function registerCollab(io, socket) {
 
   socket.on('file:leave', ({ fileId } = {}) => leave(String(fileId)));
 
-  // save an edit. If baseVersion is stale the edit still wins (last write wins)
-  // but the ack says conflict:true so the client can warn the user
+  // save an edit
   socket.on('file:edit', async ({ fileId, baseVersion, content } = {}, ack = () => {}) => {
     const key = String(fileId);
     if (!socket.rooms.has(`file:${key}`))
       return ack({ ok: false, error: 'Open the file first (file:join)' });
     if (typeof content !== 'string' || Buffer.byteLength(content) > MAX_BYTES)
-      return ack({ ok: false, error: 'Content must be text up to 1 MB' });
+      return ack({ ok: false, error: 'Content must be text up to 5 MB' });
 
     try {
       const result = await withLock(key, async () => {

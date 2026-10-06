@@ -19,8 +19,6 @@ import {
   Lock,
   RefreshCw,
   Sparkles,
-  FileOutput,
-  Loader2,
 } from 'lucide-react';
 
 function formatBytes(bytes) {
@@ -74,7 +72,6 @@ export default function RoomView({
   const [dragActive, setDragActive] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState('');
-  const [convertingFileId, setConvertingFileId] = useState(null);
 
   const fileInputRef = useRef(null);
 
@@ -192,25 +189,6 @@ export default function RoomView({
       addToast({ title: 'Downloaded', message: `"${file.originalName}" saved successfully!`, type: 'success' });
     } catch (err) {
       addToast({ title: 'Download Failed', message: err.message, type: 'error' });
-    }
-  };
-
-  const handleConvertToText = async (file) => {
-    setConvertingFileId(file.id);
-    addToast({ title: 'Converting', message: `Extracting text from "${file.originalName}"...`, type: 'info' });
-    try {
-      const res = await api.convertFileToText(file.id);
-      setFiles((prev) => [res.file, ...prev]);
-      addToast({
-        title: 'Conversion Complete!',
-        message: `"${res.file.originalName}" created. Opening editor...`,
-        type: 'success',
-      });
-      onOpenEditor(res.file);
-    } catch (err) {
-      addToast({ title: 'Conversion Failed', message: err.message, type: 'error' });
-    } finally {
-      setConvertingFileId(null);
     }
   };
 
@@ -577,35 +555,6 @@ export default function RoomView({
                           <Edit size={15} />
                           <span>Open & Edit Code / Text Live</span>
                         </button>
-                      </div>
-                    )}
-
-                    {/* Convert to text button for .docx, .pdf, etc */}
-                    {!editable && canUpload && (
-                      <div style={{ marginTop: 12 }}>
-                        <button
-                          onClick={() => handleConvertToText(file)}
-                          disabled={convertingFileId === file.id}
-                          className="btn btn-secondary btn-sm"
-                          style={{
-                            width: '100%',
-                            background: 'rgba(245, 158, 11, 0.12)',
-                            border: '1px solid rgba(245, 158, 11, 0.35)',
-                            color: 'var(--accent-amber)',
-                            padding: '8px 12px',
-                            fontWeight: 700,
-                            fontSize: '0.82rem',
-                          }}
-                        >
-                          {convertingFileId === file.id ? (
-                            <><Loader2 size={15} className="spin" /><span>Extracting Text...</span></>
-                          ) : (
-                            <><FileOutput size={15} /><span>Extract as .txt & Edit Live</span></>
-                          )}
-                        </button>
-                        <div style={{ fontSize: '0.68rem', color: 'var(--text-subtle)', marginTop: 5, textAlign: 'center' }}>
-                          Creates an editable .txt copy of this file
-                        </div>
                       </div>
                     )}
                   </div>

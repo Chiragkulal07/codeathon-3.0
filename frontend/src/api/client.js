@@ -150,7 +150,6 @@ export const api = {
   revokeFileAccess: (fileId, email) =>
     apiRequest(`/files/${fileId}/access/${encodeURIComponent(email)}`, { method: 'DELETE' }),
   getFileActivity: (fileId) => apiRequest(`/files/${fileId}/activity`),
-  convertFileToText: (fileId) => apiRequest(`/files/${fileId}/convert-to-text`, { method: 'POST' }),
 
   // Direct authenticated download
   downloadFileBlob,

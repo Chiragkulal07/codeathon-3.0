@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
+import mammoth from 'mammoth';
 import File from '../models/File.js';
 import Room from '../models/Room.js';
 import ShareLink from '../models/ShareLink.js';
@@ -19,7 +21,7 @@ const fileDto = (f) => {
     originalName: f.originalName,
     size: f.size,
     mimeType: f.mimeType,
-    restricted: f.accessGrants.length > 0,
+    restricted: f.accessGrants?.length > 0,
     uploader: populated ? { id: u._id, name: u.name, email: u.email } : { id: u },
     createdAt: f.createdAt,
   };
@@ -170,6 +172,50 @@ export async function revokeAccess(req, res, next) {
       fileId: file._id, restricted: file.accessGrants.length > 0,
     });
     res.json({ accessGrants: file.accessGrants });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function convertToText(req, res, next) {
+  try {
+    const { file, room, membership } = await loadFile(req, res);
+    if (!file) return;
+    if (!hasRole(membership, 'editor'))
+      return res.status(403).json({ message: 'Requires editor role or higher' });
+
+    const fullPath = path.join(UPLOAD_DIR, file.storageName);
+    if (!fs.existsSync(fullPath))
+      return res.status(404).json({ message: 'File is missing from storage' });
+
+    const ext = path.extname(file.originalName).toLowerCase();
+    let textContent = '';
+
+    if (ext === '.docx') {
+      const result = await mammoth.extractRawText({ path: fullPath });
+      textContent = result.value || '';
+    } else {
+      textContent = await fs.promises.readFile(fullPath, 'utf8');
+    }
+
+    const baseName = path.basename(file.originalName, path.extname(file.originalName));
+    const newOriginalName = `${baseName}.txt`;
+    const newStorageName = crypto.randomBytes(16).toString('hex') + '.txt';
+    const newFullPath = path.join(UPLOAD_DIR, newStorageName);
+
+    await fs.promises.writeFile(newFullPath, textContent, 'utf8');
+
+    const newFile = await File.create({
+      roomId: file.roomId,
+      uploaderId: req.user._id,
+      originalName: newOriginalName,
+      storageName: newStorageName,
+      size: Buffer.byteLength(textContent),
+      mimeType: 'text/plain',
+    });
+
+    emitToRoom(file.roomId, 'file:uploaded', { file: fileDto(newFile) });
+    res.status(201).json({ file: fileDto(newFile), text: textContent });
   } catch (err) {
     next(err);
   }
